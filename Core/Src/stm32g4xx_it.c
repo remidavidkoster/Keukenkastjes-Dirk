@@ -222,6 +222,7 @@ void ADC1_2_IRQHandler(void)
 	if (++ADC_ValueIndex >= ADC_BUFFER_SIZE) ADC_ValueIndex = 0;
 
 	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ADC1->DR >> 4);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, ADC1->DR >> 4);
 
 
 //	DAC1->DHR12R1 = ADC1->DR;

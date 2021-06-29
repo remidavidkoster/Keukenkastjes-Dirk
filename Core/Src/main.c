@@ -120,11 +120,11 @@ int main(void)
 
   // Start DACs for monitoring
   HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-//  HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
+  HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
 
   // Initialise data, right aligned 12 bit
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 
   // Stop HAL systick bullshit
 //  HAL_SuspendTick();
