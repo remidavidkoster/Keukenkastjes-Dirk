@@ -47,6 +47,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint16_t ADC_Value[1000];
+uint16_t ADC_ValueIndex;
+
+
+uint32_t timeDiv[500];
+uint32_t time[500];
+uint32_t timeDiv2[500];
+uint32_t timeDivIndex;
+
 
 /* USER CODE END PV */
 
@@ -101,6 +110,13 @@ int main(void)
 
   // Start timer 8 for ADC trigger
   HAL_TIM_Base_Start(&htim8);
+
+  // Start timer 2 for time keeping
+  HAL_TIM_Base_Start(&htim2);
+
+  // Start ADC with interrupt
+  HAL_ADC_Start_IT(&hadc1);
+
 
   // Stop HAL systick bullshit
   HAL_SuspendTick();
