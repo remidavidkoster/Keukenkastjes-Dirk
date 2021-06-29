@@ -47,7 +47,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define LIMIT(min, x, max) ((x) < (min) ? (min) : (x) > (max) ? (max) : (x))
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

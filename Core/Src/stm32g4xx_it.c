@@ -180,6 +180,20 @@ void PendSV_Handler(void)
   /* USER CODE END PendSV_IRQn 1 */
 }
 
+/**
+  * @brief This function handles System tick timer.
+  */
+void SysTick_Handler(void)
+{
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+
+  /* USER CODE END SysTick_IRQn 0 */
+  HAL_IncTick();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
+  /* USER CODE END SysTick_IRQn 1 */
+}
+
 /******************************************************************************/
 /* STM32G4xx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
@@ -207,13 +221,13 @@ void ADC1_2_IRQHandler(void)
 
 	if (++ADC_ValueIndex >= ADC_BUFFER_SIZE) ADC_ValueIndex = 0;
 
-	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ADC1->DR);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ADC1->DR >> 4);
 
 
 //	DAC1->DHR12R1 = ADC1->DR;
 
   /* USER CODE END ADC1_2_IRQn 0 */
-//  HAL_ADC_IRQHandler(&hadc1); // This seems to take around 210 clock cycles (out of 3400 @ 50khz)
+  HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
 
 //  timeDiv2[timeDivIndex] = TIM2->CNT - time[timeDivIndex];
