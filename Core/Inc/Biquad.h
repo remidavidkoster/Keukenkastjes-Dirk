@@ -8,13 +8,12 @@
 #ifndef BIQUAD_H_
 #define BIQUAD_H_
 
-
+#include "main.h"
 
 
 struct FilterParameters {
 	volatile float a0, a1, a2, b1, b2;
 };
-
 
 
 
@@ -83,5 +82,9 @@ private:
 	uint8_t index = 0;
 
 };
+
+extern BiquadFilter BF_highPassFilter;
+
+
 
 #endif /* BIQUAD_H_ */

@@ -30,7 +30,4 @@ FilterParameters filterThrough = {
 
 
 
-
-
-
 #endif /* FILTERPARAMETERS_H_ */

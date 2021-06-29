@@ -28,6 +28,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+
+#include "Biquad.h"
+
+
+
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +57,7 @@
 
 
 uint16_t ADC_Value[ADC_BUFFER_SIZE];
+float ADC_ValueFiltered[ADC_BUFFER_SIZE];
 uint16_t ADC_ValueIndex;
 
 //uint32_t timeDiv[500];
@@ -137,14 +145,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-//	  HAL_Delay(500);
-//	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//	  HAL_Delay(500);
-//	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 500);
-//	  HAL_Delay(500);
-//	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2000);
-//	  HAL_Delay(500);
-//	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4000);
 
     /* USER CODE BEGIN 3 */
   }

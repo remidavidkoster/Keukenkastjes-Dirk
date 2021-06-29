@@ -23,6 +23,10 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +41,6 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -48,6 +51,7 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define LIMIT(min, x, max) ((x) < (min) ? (min) : (x) > (max) ? (max) : (x))
+#define ABS(x) ((x) < (0) ? -(x) : (x))
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -75,6 +79,7 @@ void Error_Handler(void);
 
 
 extern uint16_t ADC_Value[ADC_BUFFER_SIZE];
+extern float ADC_ValueFiltered[ADC_BUFFER_SIZE];
 extern uint16_t ADC_ValueIndex;
 
 
