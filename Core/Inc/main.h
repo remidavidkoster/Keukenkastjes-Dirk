@@ -71,14 +71,17 @@ void Error_Handler(void);
 #define LD2_Pin GPIO_PIN_8
 #define LD2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-extern uint16_t ADC_Value[1000];
+#define ADC_BUFFER_SIZE 1000
+
+
+extern uint16_t ADC_Value[ADC_BUFFER_SIZE];
 extern uint16_t ADC_ValueIndex;
 
 
-extern uint32_t timeDiv[500];
-extern uint32_t time[500];
-extern uint32_t timeDiv2[500];
-extern uint32_t timeDivIndex;
+//extern uint32_t timeDiv[500];
+//extern uint32_t time[500];
+//extern uint32_t timeDiv2[500];
+//extern uint32_t timeDivIndex;
 
 /* USER CODE END Private defines */
 

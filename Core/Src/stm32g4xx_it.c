@@ -23,6 +23,8 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "dac.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -192,24 +194,29 @@ void ADC1_2_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC1_2_IRQn 0 */
 
-	timeDivIndex++;
-	time[timeDivIndex] = TIM2->CNT;
-	timeDiv[timeDivIndex] = time[timeDivIndex] - time[timeDivIndex - 1];
-
-	if (timeDivIndex > 490){
-		asm("nop");
-	}
+//	timeDivIndex++;
+//	time[timeDivIndex] = TIM2->CNT;
+//	timeDiv[timeDivIndex] = time[timeDivIndex] - time[timeDivIndex - 1];
+//
+//	if (timeDivIndex > 490){
+//		asm("nop");
+//	}
 
 	// Get ADC Value on interrupt
 	ADC_Value[ADC_ValueIndex] = ADC1->DR;
 
-	if (++ADC_ValueIndex >= 1000) ADC_ValueIndex = 0;
+	if (++ADC_ValueIndex >= ADC_BUFFER_SIZE) ADC_ValueIndex = 0;
+
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, ADC1->DR);
+
+
+//	DAC1->DHR12R1 = ADC1->DR;
 
   /* USER CODE END ADC1_2_IRQn 0 */
 //  HAL_ADC_IRQHandler(&hadc1); // This seems to take around 210 clock cycles (out of 3400 @ 50khz)
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
 
-  timeDiv2[timeDivIndex] = TIM2->CNT - time[timeDivIndex];
+//  timeDiv2[timeDivIndex] = TIM2->CNT - time[timeDivIndex];
 
   /* USER CODE END ADC1_2_IRQn 1 */
 }

@@ -47,14 +47,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint16_t ADC_Value[1000];
+
+
+uint16_t ADC_Value[ADC_BUFFER_SIZE];
 uint16_t ADC_ValueIndex;
 
-
-uint32_t timeDiv[500];
-uint32_t time[500];
-uint32_t timeDiv2[500];
-uint32_t timeDivIndex;
+//uint32_t timeDiv[500];
+//uint32_t time[500];
+//uint32_t timeDiv2[500];
+//uint32_t timeDivIndex;
 
 
 /* USER CODE END PV */
@@ -117,9 +118,16 @@ int main(void)
   // Start ADC with interrupt
   HAL_ADC_Start_IT(&hadc1);
 
+  // Start DACs for monitoring
+  HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+//  HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
+
+  // Initialise data, right aligned 12 bit
+  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+//  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 
   // Stop HAL systick bullshit
-  HAL_SuspendTick();
+//  HAL_SuspendTick();
 
 
   /* USER CODE END 2 */
@@ -129,6 +137,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  HAL_Delay(500);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+	  HAL_Delay(500);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 500);
+	  HAL_Delay(500);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2000);
+	  HAL_Delay(500);
+	  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4000);
 
     /* USER CODE BEGIN 3 */
   }
