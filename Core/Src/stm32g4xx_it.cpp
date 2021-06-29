@@ -238,22 +238,25 @@ void ADC1_2_IRQHandler(void)
 
 	ADC_ValueFiltered[ADC_ValueIndex] = rectified;
 
-	uint16_t index2 = ADC_ValueIndex + ADC_BUFFER_SIZE - 1;
-	uint16_t index3 = ADC_ValueIndex + ADC_BUFFER_SIZE - 2;
-
-	if (index2 >= ADC_BUFFER_SIZE) index2 -= ADC_BUFFER_SIZE;
-	if (index3 >= ADC_BUFFER_SIZE) index3 -= ADC_BUFFER_SIZE;
 
 
-	if (ADC_ValueFiltered[ADC_ValueIndex] < ADC_ValueFiltered[index2] && ADC_ValueFiltered[index2] > ADC_ValueFiltered[index3]){
-		peak = ADC_ValueFiltered[index2];
+	float average = 0;
+
+	int index = ADC_ValueIndex;
+
+	for (int i = 0; i < 100; i++){
+		index--;
+		if (index < 0) index += ADC_BUFFER_SIZE;
+
+//		if (ADC_ValueFiltered[index] > max) max = ADC_ValueFiltered[index];
+		average += ADC_ValueFiltered[index];
 	}
+	average /= 50.0f;
 
 
 
-
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, rectified / 4.0f);
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, peak / 4.0f);
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, rectified / 16.0f);
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, average / 16.0f);
 
 	if (++ADC_ValueIndex >= ADC_BUFFER_SIZE) ADC_ValueIndex = 0;
 
