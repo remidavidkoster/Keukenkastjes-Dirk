@@ -88,8 +88,8 @@ uint32_t detecionState = 0;
 
 #define DETECTION_THRESHOLD 1000
 #define RELEASE_THRESHOLD 500
-#define ERROR_THRESHOLD 7
-#define MIN_SLOPE 3
+#define ERROR_THRESHOLD 10
+#define MIN_SLOPE 2
 
 uint16_t lastClapTimestamp, time, firstTime, secondTime;
 uint8_t clapped, lightState;
@@ -104,6 +104,138 @@ uint8_t clapState = gotFirstClap;
 // Units in 0.1ms
 #define minClapTime 1000
 #define maxClapTime 8000
+
+
+float cosFast(float x){
+    x *= 0.159154943f;
+    x -= 0.25f + (int)(x + 0.25f);
+    x *= 16.0f * (ABS(x) - 0.5f);
+    return x;
+}
+
+#define PI 3.14159265359f
+
+
+
+
+uint16_t ledValue[8];
+
+void setLedsFromBuffer(){
+	TIM1->CCR1 = ledValue[0];
+	TIM1->CCR2 = ledValue[1];
+	TIM1->CCR3 = ledValue[2];
+	TIM1->CCR4 = ledValue[3];
+	TIM3->CCR1 = ledValue[4];
+	TIM3->CCR2 = ledValue[5];
+	TIM4->CCR1 = ledValue[6];
+	TIM4->CCR2 = ledValue[7];
+}
+
+
+
+
+
+// Cosine ramp from 0 to 1
+float flatCos(float x){
+    return 0.5f - 0.5f * (cosFast(PI * x));
+}
+
+#define PWM_MAX 65535
+
+void fadeIn(){
+	for (int i = 0; i <= 250; i++){
+
+		float fader = flatCos(i / 250.0f);
+		uint16_t value = fader * fader * PWM_MAX;
+
+		for (int led = 0; led < 8; led++) ledValue[led] = value;
+
+		setLedsFromBuffer();
+
+		for (uint16_t timer = TIM17->CNT; TIM17->CNT - timer < 100;);
+	}
+}
+
+
+
+void fadeOut(){
+	for (int i = 250; i >= 0; i--){
+
+		float fader = flatCos(i / 250.0f);
+		uint16_t value = fader * fader * PWM_MAX;
+
+		for (int led = 0; led < 8; led++) ledValue[led] = value;
+
+		setLedsFromBuffer();
+
+		for (uint16_t timer = TIM17->CNT; TIM17->CNT - timer < 100;);
+	}
+}
+
+
+
+
+void fadeInSequential(){
+
+	int32_t counter = 0;
+
+	while (TIM4->CCR2 < PWM_MAX){
+
+
+
+		for (int led = 0; led < 8; led++) {
+
+
+			float fader = flatCos(LIMIT(0, counter - led * 20, 250) / 250.0f);
+			uint16_t value = fader * fader * PWM_MAX;
+
+			ledValue[led] = value;
+		}
+
+		setLedsFromBuffer();
+
+
+		for (uint16_t timer = TIM17->CNT; TIM17->CNT - timer < 100;);
+
+		counter += 1;
+	}
+	asm("nop");
+
+}
+
+
+
+
+void fadeOutSequential(){
+
+	int32_t counter = 391;
+
+	while (TIM4->CCR2 > 0){
+
+		for (int led = 0; led < 8; led++) {
+			float fader = flatCos(LIMIT(0, counter - (7-led) * 20, 250) / 250.0f);
+			uint16_t value = fader * fader * PWM_MAX;
+
+			ledValue[led] = value;
+		}
+
+		setLedsFromBuffer();
+
+
+		for (uint16_t timer = TIM17->CNT; TIM17->CNT - timer < 100;);
+
+		counter -= 1;
+	}
+
+	asm("nop");
+
+}
+
+
+
+
+
+
 
 /* USER CODE END 0 */
 
@@ -166,8 +298,31 @@ int main(void)
 	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+
+	TIM1->CCR1 = 1000;
+	TIM1->CCR2 = 1000;
+	TIM1->CCR3 = 1000;
+	TIM1->CCR4 = 1000;
+
+	TIM3->CCR1 = 1000;
+	TIM3->CCR2 = 1000;
+
+	TIM4->CCR1 = 1000;
+	TIM4->CCR2 = 1000;
+
+
 	// Stop HAL systick bullshit
-	//  HAL_SuspendTick();
+	  HAL_SuspendTick();
 
 	uint32_t errorCounter = 0;
 	uint16_t lastData = 0;
@@ -249,6 +404,11 @@ int main(void)
 					detecionState = WAITING_FOR_SILENCE;
 					//				  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 3000 / 3.3f * 4.096f);
 					DAC1->DHR12R2 = 3000 / 3.3f * 4.096f;
+
+					HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+					for (uint16_t time = TIM17->CNT; TIM17->CNT - time < 1;);
+					HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+
 				}
 
 			}
@@ -304,6 +464,7 @@ int main(void)
 //						mode = clapValue;
 //						data[1] = 1023;
 						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+						if (lightState != 1) fadeInSequential();
 						lightState = 1;
 					}
 					if (secondTime > firstTime * 0.25f && secondTime < firstTime * 0.75f){
@@ -312,7 +473,9 @@ int main(void)
 //						mode = clapValue;
 //						data[1] = 0;
 						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+						if (lightState != 0) fadeOutSequential();
 						lightState = 0;
+
 					}
 					if (secondTime > firstTime * 0.75f && secondTime < firstTime * 1.25f){
 //						Serial.println("Full off");
