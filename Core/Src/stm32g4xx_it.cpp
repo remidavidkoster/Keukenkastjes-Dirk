@@ -25,7 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "dac.h"
 #include "Biquad.h"
-
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,6 +55,10 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+
+
 
 /* USER CODE END 0 */
 
@@ -212,12 +216,32 @@ void SysTick_Handler(void)
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y));
 
-#define PEAK_SCALE 0.98f
+
+
+
+
+MeasArray<uint32_t,uint32_t> valueRectified(100);
+MeasArray<uint16_t,uint32_t> logFilter(2500);
+
+
+uint16_t newData;
+
+uint32_t usedCycles;
+
+
+Prescaler prescaler;
+
+volatile uint32_t newValue;
+
+
+#define REC_THRESHOLD 600
 
 
 void ADC1_2_IRQHandler(void)
 {
 	/* USER CODE BEGIN ADC1_2_IRQn 0 */
+
+	uint32_t timeStamp = TIM2->CNT;
 
 	//	timeDivIndex++;
 	//	time[timeDivIndex] = TIM2->CNT;
@@ -231,34 +255,37 @@ void ADC1_2_IRQHandler(void)
 //	ADC_Value[ADC_ValueIndex] = ADC1->DR;
 
 
-	static float peak;
 
+	// High pass filter the raw value
 	float filtered  = BF_highPassFilter.calculate(ADC1->DR);
+
+	// Rectify the audio signal
 	float rectified = ABS(filtered);
 
-	ADC_ValueFiltered[ADC_ValueIndex] = rectified;
+	rectified = rectified < REC_THRESHOLD ? 0 : rectified - REC_THRESHOLD;
+
+	valueRectified.add(rectified);
+
+	float average = valueRectified.getAverage();
+
+	float logValue = log10f(average) * 700;
+
+	logFilter.add(logValue);
+
+//	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, logValue);
 
 
+	if (prescaler.check(50)){
 
-	float average = 0;
+		// Tell people we have a new data point
+		newValue = 1;
 
-	int index = ADC_ValueIndex;
+		// Save filtered log value to data buffer
+		newData = logFilter.getAverage();
 
-	for (int i = 0; i < 100; i++){
-		index--;
-		if (index < 0) index += ADC_BUFFER_SIZE;
-
-//		if (ADC_ValueFiltered[index] > max) max = ADC_ValueFiltered[index];
-		average += ADC_ValueFiltered[index];
+		// Display value with 1000 as 1V
+//		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dataBuffer[dataBufferIndex] / 3.3f * 4.096f);
 	}
-	average /= 50.0f;
-
-
-
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, rectified / 16.0f);
-	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, average / 16.0f);
-
-	if (++ADC_ValueIndex >= ADC_BUFFER_SIZE) ADC_ValueIndex = 0;
 
 
 	//	DAC1->DHR12R1 = ADC1->DR;
@@ -268,6 +295,9 @@ void ADC1_2_IRQHandler(void)
 	/* USER CODE BEGIN ADC1_2_IRQn 1 */
 
 	//  timeDiv2[timeDivIndex] = TIM2->CNT - time[timeDivIndex];
+
+
+	usedCycles = TIM2->CNT - timeStamp;
 
 	/* USER CODE END ADC1_2_IRQn 1 */
 }

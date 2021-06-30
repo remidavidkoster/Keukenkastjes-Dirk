@@ -59,6 +59,14 @@ void SysTick_Handler(void);
 void ADC1_2_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
+// 400ms of data
+#define DATA_BUFFER_SIZE 400
+
+extern volatile uint32_t newValue;
+
+extern uint16_t newData;
+
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

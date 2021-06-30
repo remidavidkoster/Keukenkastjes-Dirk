@@ -24,6 +24,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "stm32g4xx_it.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,9 +57,6 @@
 /* USER CODE BEGIN PV */
 
 
-uint16_t ADC_Value[ADC_BUFFER_SIZE];
-float ADC_ValueFiltered[ADC_BUFFER_SIZE];
-uint16_t ADC_ValueIndex;
 
 //uint32_t timeDiv[500];
 //uint32_t time[500];
@@ -76,6 +74,23 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+enum {
+	WAITING_FOR_THRESHOLD,
+	WAITING_FOR_PEAK,
+	DECLINING,
+	WAITING_FOR_SILENCE
+};
+
+uint32_t detecionState = 0;
+
+
+#define DETECTION_THRESHOLD 1000
+#define RELEASE_THRESHOLD 500
+#define ERROR_THRESHOLD 7
+#define MIN_SLOPE 3
+
 
 /* USER CODE END 0 */
 
@@ -137,6 +152,8 @@ int main(void)
   // Stop HAL systick bullshit
 //  HAL_SuspendTick();
 
+  uint32_t errorCounter = 0;
+  uint16_t lastData = 0;
 
   /* USER CODE END 2 */
 
@@ -144,6 +161,81 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  if (newValue){
+
+		  // Reset new data flag
+		  newValue = 0;
+
+		  // Update waveform to DAC
+		  DAC1->DHR12R1 = newData / 3.3f * 4.096f;
+
+
+
+		  if (detecionState == WAITING_FOR_THRESHOLD){
+
+			  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+
+			  if (newData >= DETECTION_THRESHOLD){
+				  detecionState = WAITING_FOR_PEAK;
+			  }
+		  }
+
+
+
+		  else if (detecionState == WAITING_FOR_PEAK){
+
+			  DAC1->DHR12R2 = 500 / 3.3f * 4.096f;
+
+			  if (newData < lastData){
+				  detecionState = DECLINING;
+			  }
+		  }
+
+
+
+		  else if (detecionState == DECLINING){
+
+			  DAC1->DHR12R2 = 1000 / 3.3f * 4.096f;
+
+
+			  // If it fucks up
+			  if (newData > lastData - MIN_SLOPE){
+				  errorCounter++;
+
+				  if (errorCounter >= ERROR_THRESHOLD){
+					  detecionState = WAITING_FOR_SILENCE;
+					  errorCounter = 0;
+				  }
+			  }
+
+
+			  // Here it made it to the end
+			  if (newData < RELEASE_THRESHOLD){
+				  detecionState = WAITING_FOR_SILENCE;
+//				  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 3000 / 3.3f * 4.096f);
+				  DAC1->DHR12R2 = 3000 / 3.3f * 4.096f;
+			  }
+
+		  }
+
+
+
+		  else if (detecionState == WAITING_FOR_SILENCE){
+			  DAC1->DHR12R2 = 1500 / 3.3f * 4.096f;
+
+			  if (newData == 0){
+				  detecionState = WAITING_FOR_THRESHOLD;
+
+			  }
+		  }
+
+		  // Save data for next round
+		  lastData = newData;
+	  }
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

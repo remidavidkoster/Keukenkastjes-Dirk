@@ -83,6 +83,69 @@ private:
 
 };
 
+
+
+template <class dataType, class totalType> class MeasArray {
+public:
+	MeasArray(int s) {
+		size = s;
+		take = new dataType[s];
+		fill(0);
+	}
+	~MeasArray() {
+		delete[] take;
+	}
+
+	void add(dataType value) {
+		total -= take[index];
+		take[index] = value;
+		total += take[index];
+
+		if (++index == size) index = 0;
+	}
+	void fill(dataType value) {
+		for (int i = 0; i < size; i++) take[i] = value;
+		index = 0;
+		total = value * size;
+	}
+	void reset() {
+		fill(0);
+	}
+
+	dataType getAverage() {
+		return total / size;
+	}
+
+	// Returns a single sample. 0 is the latest one, -10 is 10 samples ago.
+	dataType getSample(int32_t i) {
+		int32_t calcIndex = index + i + size - 1;
+		if (calcIndex >= size) calcIndex -= size;
+		return take[calcIndex];
+	}
+
+private:
+	int size;
+	int index = 0;
+	dataType * take;
+	totalType total;
+};
+
+
+class Prescaler {
+public:
+	Prescaler() {}
+	bool check(unsigned long value) {
+		if (++counter == value) {
+			counter = 0;
+			return 1;
+		}
+		return 0;
+	}
+private:
+	unsigned long counter = 0;
+};
+
+
 extern BiquadFilter BF_highPassFilter;
 
 
