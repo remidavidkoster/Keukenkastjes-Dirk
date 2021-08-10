@@ -327,6 +327,10 @@ int main(void)
 	uint32_t errorCounter = 0;
 	uint16_t lastData = 0;
 
+
+	fadeInSequential();
+	lightState = 1;
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -464,27 +468,33 @@ int main(void)
 //						mode = clapValue;
 //						data[1] = 1023;
 						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-						if (lightState != 1) fadeInSequential();
-						lightState = 1;
-					}
-					if (secondTime > firstTime * 0.25f && secondTime < firstTime * 0.75f){
-//						Serial.println("Full off");
-//						checkPassed(0);
-//						mode = clapValue;
-//						data[1] = 0;
-						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-						if (lightState != 0) fadeOutSequential();
-						lightState = 0;
+						if (lightState != 1) {
+							fadeInSequential();
+							lightState = 1;
+						}
+						else if (lightState != 0) {
+							fadeOutSequential();
+							lightState = 0;
+						}
 
 					}
-					if (secondTime > firstTime * 0.75f && secondTime < firstTime * 1.25f){
-//						Serial.println("Full off");
-//						checkPassed(0);
-//						mode = clapValue;
-//						data[1] = 0;
-						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-						lightState = 2;
-					}
+//					if (secondTime > firstTime * 0.25f && secondTime < firstTime * 0.75f){
+////						Serial.println("Full off");
+////						checkPassed(0);
+////						mode = clapValue;
+////						data[1] = 0;
+//						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+//
+//
+//					}
+//					if (secondTime > firstTime * 0.75f && secondTime < firstTime * 1.25f){
+////						Serial.println("Full off");
+////						checkPassed(0);
+////						mode = clapValue;
+////						data[1] = 0;
+//						HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+//						lightState = 2;
+//					}
 				}
 				else {
 					clapState = gotFirstClap;
