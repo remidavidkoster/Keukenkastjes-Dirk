@@ -186,7 +186,7 @@ void fadeInSequential(){
 		for (int led = 0; led < 8; led++) {
 
 
-			float fader = flatCos(LIMIT(0, counter - led * 20, 250) / 250.0f);
+			float fader = flatCos(LIMIT(0, counter - led * 50, 250) / 250.0f);
 			uint16_t value = fader * fader * PWM_MAX;
 
 			ledValue[led] = value;
@@ -213,7 +213,7 @@ void fadeOutSequential(){
 	while (TIM4->CCR2 > 0){
 
 		for (int led = 0; led < 8; led++) {
-			float fader = flatCos(LIMIT(0, counter - (7-led) * 20, 250) / 250.0f);
+			float fader = flatCos(LIMIT(0, counter - (7-led) * 50, 250) / 250.0f);
 			uint16_t value = fader * fader * PWM_MAX;
 
 			ledValue[led] = value;
